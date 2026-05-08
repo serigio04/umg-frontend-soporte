@@ -78,18 +78,16 @@ export default function HistorialTickets() {
               <div key={ticket.idTicket} style={styles.ticketCard}>
                 <div style={styles.ticketTop}>
                   <span style={styles.ticketId}>Ticket #{ticket.idTicket}</span>
-                  <div style={styles.badges}>
-                    <span style={{ ...styles.badge, background: COLOR_PRIORIDAD[ticket.prioridadSLA] || '#999' }}>
-                      {ticket.prioridadSLA}
-                    </span>
-                    <span style={{ ...styles.badge, background: COLOR_ESTADO[ticket.estado] || '#999' }}>
-                      {ticket.estado}
-                    </span>
-                  </div>
+                  <span style={{ ...styles.badge, background: COLOR_ESTADO[ticket.estado] || '#999' }}>
+                    {ticket.estado}
+                  </span>
                 </div>
 
                 <div style={styles.ticketMid}>
                   <span style={styles.tipologia}>{ticket.tipologiaITIL}</span>
+                  {ticket.descripcion && (
+                    <p style={styles.descripcion}>{ticket.descripcion}</p>
+                  )}
                 </div>
 
                 <div style={styles.ticketBottom}>
@@ -129,5 +127,15 @@ const styles = {
   tipologia: { fontSize: '13px', color: '#555' },
   ticketBottom: { borderTop: '1px solid #f0f0f0', paddingTop: '8px' },
   fecha: { fontSize: '12px', color: '#aaa' },
-  empty: { textAlign: 'center', color: '#aaa', fontSize: '14px', padding: '3rem 0' }
+  empty: { textAlign: 'center', color: '#aaa', fontSize: '14px', padding: '3rem 0' },
+  descripcion: { 
+    fontSize: '13px', 
+    color: '#666', 
+    margin: '6px 0 0', 
+    lineHeight: '1.5',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,    
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden'
+  }
 }
