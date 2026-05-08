@@ -1,0 +1,160 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../services/api'
+
+export default function DashboardEstudiante() {
+  const [estudiante, setEstudiante] = useState(null)
+  const [ultimoTicket, setUltimoTicket] = useState(null)
+  const navigate = useNavigate()
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+
+  useEffect(() => {
+    // Cuando tengas los endpoints listos, descomenta esto:
+    // api.get('/estudiantes/perfil').then(r => setEstudiante(r.data))
+    // api.get('/tickets/ultimo').then(r => setUltimoTicket(r.data))
+
+    // Datos de prueba mientras construyes el backend
+    setEstudiante({
+      nombre: usuario.nombreCompleto || 'Estudiante',
+      carne: '9989-23-11043',
+      carrera: 'Ingeniería en Sistemas',
+      saldo: 'Q1,250.00'
+    });
+    setUltimoTicket({
+      idTicket: 1,
+      titulo: 'Problema con inscripción',
+      estado: 'En Proceso',
+      prioridad: 'Alta',
+      fecha: '2026-05-01'
+    });
+  }, [])
+
+  function cerrarSesion() {
+    localStorage.clear()
+    navigate('/login')
+  }
+
+  const colorEstado = {
+    'Abierto': '#2980b9',
+    'En Proceso': '#e67e22',
+    'Pendiente': '#8e44ad',
+    'Resuelto': '#27ae60',
+    'Cerrado': '#7f8c8d'
+  }
+
+  return (
+    <div style={styles.page}>
+        {/* Header */}
+        <div style={styles.header}>
+            <span style={styles.headerTitle}>Sistema de Soporte UMG</span>
+            <button onClick={cerrarSesion} style={styles.logoutBtn}>Cerrar sesión</button>
+        </div>
+
+        {/* Sección 1 — Acciones rápidas */}
+        <div style={styles.section}>
+                <h3 style={styles.sectionTitle}>¿En qué podemos ayudarte?</h3>
+                <div style={styles.btnGroup}>
+                    <button style={styles.actionBtn} onClick={() => navigate('/estudiante/tickets/nuevo')}>
+                        Crear ticket
+                    </button>
+                    <button style={styles.actionBtn} onClick={() => navigate('/estudiante/tickets')}>
+                        Mis tickets
+                    </button>
+                    <button style={styles.actionBtn} onClick={() => navigate('/preguntas-frecuentes')}>
+                        Preguntas frecuentes
+                    </button>
+                </div>
+        </div>
+
+        {/* Sección 2 — Dividida en dos columnas */}
+        <div style={styles.grid}>
+
+        {/* 2.1 Datos del estudiante */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+                <h4 style={styles.cardTitle}>Mi perfil</h4>
+                <button style={styles.editBtn} onClick={() => navigate('/estudiante/perfil')}>
+                    Editar
+                </button>
+          </div>
+            {estudiante ? (
+            <div>
+                <InfoRow label="Nombre" value={estudiante.nombre} />
+                <InfoRow label="Carné" value={estudiante.carne} />
+                <InfoRow label="Carrera" value={estudiante.carrera} />
+                <InfoRow label="Saldo" value={estudiante.saldo} />
+            </div>
+          ) : (
+            <p style={styles.loading}>Cargando...</p>
+          )}
+        </div>
+
+        {/* 2.2 Último ticket */}
+        <div style={styles.card}>
+            <div style={styles.cardHeader}>
+                <h4 style={styles.cardTitle}>Último ticket abierto</h4>
+            </div>
+          {ultimoTicket ? (
+            <div>
+                <InfoRow label="Ticket #" value={ultimoTicket.idTicket} />
+                <InfoRow label="Asunto" value={ultimoTicket.titulo} />
+                <InfoRow label="Fecha" value={ultimoTicket.fecha} />
+                <div style={styles.row}>
+                    <span style={styles.rowLabel}>Estado</span>
+                    <span style={{
+                    ...styles.badge,
+                    background: colorEstado[ultimoTicket.estado] || '#999'
+                    }}>
+                    {ultimoTicket.estado}
+                    </span>
+                </div>
+                <div style={styles.row}>
+                    <span style={styles.rowLabel}>Prioridad</span>
+                    <span style={styles.rowValue}>{ultimoTicket.prioridad}</span>
+                </div>
+                <button
+                    style={{ ...styles.actionBtn, marginTop: '1rem', width: '100%' }}
+                    onClick={() => navigate('/estudiante/tickets')}
+                >
+                    Ver historial completo
+                </button>
+            </div>
+          ) : (
+            <p style={styles.loading}>No tienes tickets abiertos</p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+        <span style={{ fontSize: '13px', color: '#888' }}>{label}</span>
+        <span style={{ fontSize: '13px', fontWeight: '500', color: '#1a1a2e' }}>{value}</span>
+    </div>
+  )
+}
+
+const styles = {
+  page: { minHeight: '100vh', background: '#f4f4f4', fontFamily: 'sans-serif' },
+  header: { background: '#1a1a2e', color: '#fff', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  headerTitle: { fontWeight: '500', fontSize: '15px' },
+  logoutBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  section: { padding: '1.5rem 2rem 0' },
+  sectionTitle: { fontSize: '15px', fontWeight: '500', color: '#1a1a2e', marginBottom: '1rem' },
+  btnGroup: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
+  actionBtn: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1.5rem 2rem' },
+  card: { background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
+  cardTitle: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e' },
+  editBtn: { background: 'transparent', border: '1px solid #ddd', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#555' },
+  row: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' },
+  rowLabel: { fontSize: '13px', color: '#888' },
+  rowValue: { fontSize: '13px', fontWeight: '500', color: '#1a1a2e' },
+  badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' },
+  loading: { fontSize: '13px', color: '#aaa', textAlign: 'center', padding: '1rem 0' }
+}
