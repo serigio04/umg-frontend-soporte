@@ -18,6 +18,8 @@ export default function Login() {
 
       // Redirige según el rol
       if (data.usuario.rol === 'Estudiante') navigate('/estudiante/dashboard')
+      if (data.usuario.rol === 'Agente')       navigate('/agente/dashboard')
+      if (data.usuario.rol === 'Coordinador')  navigate('/agente/dashboard')
       // aquí irán los demás roles
     } catch (err) {
       setError('Correo o contraseña incorrectos', + err)
