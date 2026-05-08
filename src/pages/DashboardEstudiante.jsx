@@ -1,34 +1,41 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api from '../services/api'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 export default function DashboardEstudiante() {
-  const [estudiante, setEstudiante] = useState(null)
-  const [ultimoTicket, setUltimoTicket] = useState(null)
-  const navigate = useNavigate()
+  const [estudiante, setEstudiante] = useState(null);
+  const [ultimoTicket, setUltimoTicket] = useState(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-        // Cuando tengas los endpoints listos, descomenta esto:
-        // api.get('/estudiantes/perfil').then(r => setEstudiante(r.data))
+    useEffect(() => {
         api.get('/tickets/ultimo')
-        .then(r => setUltimoTicket(r.data))
-        .catch(() => setUltimoTicket(null))
-
-        // Datos del estudiante los traes del localStorage por ahora
-        // hasta que tengas el endpoint de perfil
-        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
-            setEstudiante({
-                nombre: usuario.nombreCompleto,
-                carne: '—',       // pendiente endpoint perfil
-                carrera: '—',     // pendiente endpoint perfil
-                saldo: '—'        // pendiente endpoint perfil
+            .then(ticket => {
+            const lastTicket = ticket.data
+            if (lastTicket) setUltimoTicket({
+                idTicket:     lastTicket.idTicket,
+                tipologia:    lastTicket.tipologiaITIL,
+                estado:       lastTicket.estado,
+                descripcion:  lastTicket.descripcion,
+                fecha:        new Date(lastTicket.fechaCreacion).toLocaleDateString('es-GT', {
+                                day: '2-digit', month: 'short', year: 'numeric'
+                            })
+            });
             })
-    }, [])
+            .catch(() => setUltimoTicket(null));
+
+        const u = JSON.parse(localStorage.getItem('usuario') || '{}')
+        setEstudiante({
+            nombre:  u.nombreCompleto,
+            carne:   '—',
+            carrera: '—',
+            saldo:   '—'
+        });
+    }, []);
 
   function cerrarSesion() {
-    localStorage.clear()
-    navigate('/login')
-  }
+    localStorage.clear();
+    navigate('/login');
+  };
 
   const colorEstado = {
     'Abierto': '#2980b9',
@@ -36,7 +43,7 @@ export default function DashboardEstudiante() {
     'Pendiente': '#8e44ad',
     'Resuelto': '#27ae60',
     'Cerrado': '#7f8c8d'
-  }
+  };
 
   return (
     <div style={styles.page}>
@@ -90,34 +97,33 @@ export default function DashboardEstudiante() {
             <div style={styles.cardHeader}>
                 <h4 style={styles.cardTitle}>Último ticket abierto</h4>
             </div>
-          {ultimoTicket ? (
-            <div>
-                <InfoRow label="Ticket #" value={ultimoTicket.idTicket} />
-                <InfoRow label="Asunto" value={ultimoTicket.titulo} />
-                <InfoRow label="Fecha" value={ultimoTicket.fecha} />
-                <div style={styles.row}>
+            {ultimoTicket ? (
+                <div>
+                    <InfoRow label="Ticket #"  value={ultimoTicket.idTicket} />
+                    <InfoRow label="Tipo"      value={ultimoTicket.tipologia} />
+                    <InfoRow label="Fecha"     value={ultimoTicket.fecha} />
+                    {ultimoTicket.descripcion && (
+                        <div style={styles.descRow}>
+                            <span style={styles.rowLabel}>Descripción</span>
+                            <span style={styles.descValor}>{ultimoTicket.descripcion}</span>
+                        </div>
+                    )}
+                    <div style={styles.row}>
                     <span style={styles.rowLabel}>Estado</span>
-                    <span style={{
-                    ...styles.badge,
-                    background: colorEstado[ultimoTicket.estado] || '#999'
-                    }}>
-                    {ultimoTicket.estado}
+                    <span style={{ ...styles.badge, background: colorEstado[ultimoTicket.estado] || '#999' }}>
+                        {ultimoTicket.estado}
                     </span>
-                </div>
-                <div style={styles.row}>
-                    <span style={styles.rowLabel}>Prioridad</span>
-                    <span style={styles.rowValue}>{ultimoTicket.prioridad}</span>
-                </div>
-                <button
+                    </div>
+                    <button
                     style={{ ...styles.actionBtn, marginTop: '1rem', width: '100%' }}
                     onClick={() => navigate('/estudiante/tickets')}
-                >
+                    >
                     Ver historial completo
-                </button>
-            </div>
-          ) : (
-            <p style={styles.loading}>No tienes tickets abiertos</p>
-          )}
+                    </button>
+                </div>
+                ) : (
+                <p style={styles.loading}>No tienes tickets abiertos</p>
+            )}
         </div>
 
       </div>
@@ -135,22 +141,40 @@ function InfoRow({ label, value }) {
 }
 
 const styles = {
-  page: { minHeight: '100vh', background: '#f4f4f4', fontFamily: 'sans-serif' },
-  header: { background: '#1a1a2e', color: '#fff', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  headerTitle: { fontWeight: '500', fontSize: '15px' },
-  logoutBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
-  section: { padding: '1.5rem 2rem 0' },
-  sectionTitle: { fontSize: '15px', fontWeight: '500', color: '#1a1a2e', marginBottom: '1rem' },
-  btnGroup: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
-  actionBtn: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1.5rem 2rem' },
-  card: { background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
-  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
-  cardTitle: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e' },
-  editBtn: { background: 'transparent', border: '1px solid #ddd', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#555' },
-  row: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' },
-  rowLabel: { fontSize: '13px', color: '#888' },
-  rowValue: { fontSize: '13px', fontWeight: '500', color: '#1a1a2e' },
-  badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' },
-  loading: { fontSize: '13px', color: '#aaa', textAlign: 'center', padding: '1rem 0' }
+    page: { minHeight: '100vh', background: '#f4f4f4', fontFamily: 'sans-serif' },
+    header: { background: '#1a1a2e', color: '#fff', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    headerTitle: { fontWeight: '500', fontSize: '15px' },
+    logoutBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+    section: { padding: '1.5rem 2rem 0' },
+    sectionTitle: { fontSize: '15px', fontWeight: '500', color: '#1a1a2e', marginBottom: '1rem' },
+    btnGroup: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
+    actionBtn: { padding: '10px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+    grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1.5rem 2rem' },
+    card: { background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+    cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
+    cardTitle: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e' },
+    editBtn: { background: 'transparent', border: '1px solid #ddd', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#555' },
+    row: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' },
+    rowLabel: { fontSize: '13px', color: '#888' },
+    rowValue: { fontSize: '13px', fontWeight: '500', color: '#1a1a2e' },
+    badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' },
+    loading: { fontSize: '13px', color: '#aaa', textAlign: 'center', padding: '1rem 0' },
+    descRow: { 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-start',
+        gap: '12px',
+        padding: '8px 0', 
+        borderBottom: '1px solid #f0f0f0' 
+    },
+    descValor: { 
+        fontSize: '13px', 
+        color: '#1a1a2e', 
+        lineHeight: '1.5',
+        textAlign: 'right',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden'
+    }
 }
