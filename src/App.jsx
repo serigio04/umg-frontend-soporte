@@ -4,6 +4,7 @@ import DashboardEstudiante from './pages/DashboardEstudiante';
 import CrearTicket from './pages/CrearTicket';
 import HistorialTickets from './pages/HistorialTickets';
 import DashboardAgente from './pages/DashboardAgente';
+import TicketsAsignados from './pages/TicketsAsignados';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/estudiante/tickets"        element={<HistorialTickets />} />
         <Route path="/estudiante/tickets/nuevo"  element={<CrearTicket />} /> 
         <Route path="/agente/dashboard" element={<DashboardAgente />} />
+        <Route path="/agente/tickets" element={<TicketsAsignados />} />
       </Routes>
     </BrowserRouter>
   )
