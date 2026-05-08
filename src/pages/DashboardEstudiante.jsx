@@ -6,28 +6,24 @@ export default function DashboardEstudiante() {
   const [estudiante, setEstudiante] = useState(null)
   const [ultimoTicket, setUltimoTicket] = useState(null)
   const navigate = useNavigate()
-  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
   useEffect(() => {
-    // Cuando tengas los endpoints listos, descomenta esto:
-    // api.get('/estudiantes/perfil').then(r => setEstudiante(r.data))
-    // api.get('/tickets/ultimo').then(r => setUltimoTicket(r.data))
+        // Cuando tengas los endpoints listos, descomenta esto:
+        // api.get('/estudiantes/perfil').then(r => setEstudiante(r.data))
+        api.get('/tickets/ultimo')
+        .then(r => setUltimoTicket(r.data))
+        .catch(() => setUltimoTicket(null))
 
-    // Datos de prueba mientras construyes el backend
-    setEstudiante({
-      nombre: usuario.nombreCompleto || 'Estudiante',
-      carne: '9989-23-11043',
-      carrera: 'Ingeniería en Sistemas',
-      saldo: 'Q1,250.00'
-    });
-    setUltimoTicket({
-      idTicket: 1,
-      titulo: 'Problema con inscripción',
-      estado: 'En Proceso',
-      prioridad: 'Alta',
-      fecha: '2026-05-01'
-    });
-  }, [])
+        // Datos del estudiante los traes del localStorage por ahora
+        // hasta que tengas el endpoint de perfil
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+            setEstudiante({
+                nombre: usuario.nombreCompleto,
+                carne: '—',       // pendiente endpoint perfil
+                carrera: '—',     // pendiente endpoint perfil
+                saldo: '—'        // pendiente endpoint perfil
+            })
+    }, [])
 
   function cerrarSesion() {
     localStorage.clear()
