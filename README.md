@@ -38,8 +38,8 @@ Interfaz de usuario del sistema de gestión de tickets de soporte para estudiant
 ### 1. Clonar el repositorio y navegar al cliente
 
 ```bash
-git clone https://github.com/serigio04/umg-proyecto-soporte.git
-cd umg-proyecto-soporte/client
+git clone https://github.com/serigio04/umg-frontend-soporte
+cd umg-frontend-soporte
 ```
 
 ### 2. Instalar dependencias
