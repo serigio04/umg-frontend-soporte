@@ -28,7 +28,8 @@ export default function CrearTicket() {
     setLoading(true)
     try {
       await api.post('/tickets', { tipologiaITIL: tipologia, descripcion })
-      navigate('/estudiante/tickets')
+      //todo al crear ticket redireccionar al dashboard correspondiente segun rol
+      navigate('{{rol}}/tickets')
     } catch (err) {
       setError(err.response?.data?.message || 'Error al crear el ticket')
     } finally {
@@ -41,7 +42,8 @@ export default function CrearTicket() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <button style={styles.backBtn} onClick={() => navigate('/estudiante/dashboard')}>
+        {/* todo volver al dashboard correspondiente segun rol */}
+        <button style={styles.backBtn} onClick={() => navigate('/{{rol}}/dashboard')}>
           ← Volver
         </button>
         <span style={styles.headerTitle}>Crear ticket</span>
