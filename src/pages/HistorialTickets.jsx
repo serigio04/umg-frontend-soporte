@@ -42,7 +42,7 @@ export default function HistorialTickets() {
           ← Volver
         </button>
         <span style={styles.headerTitle}>Mis tickets</span>
-        <button style={styles.newBtn} onClick={() => navigate('/estudiante/tickets/nuevo')}>
+        <button style={styles.newBtn} onClick={() => navigate('/tickets/nuevo')}>
           + Nuevo
         </button>
       </div>
