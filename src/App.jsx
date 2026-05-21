@@ -14,7 +14,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/estudiante/dashboard" element={<DashboardEstudiante />} />
         <Route path="/estudiante/tickets"        element={<HistorialTickets />} />
-        <Route path="/estudiante/tickets/nuevo"  element={<CrearTicket />} /> 
+        <Route path="/tickets/nuevo"  element={<CrearTicket />} /> 
         <Route path="/agente/dashboard" element={<DashboardAgente />} />
         <Route path="/agente/tickets" element={<TicketsAsignados />} />
       </Routes>

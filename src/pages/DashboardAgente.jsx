@@ -53,7 +53,7 @@ export default function DashboardAgente() {
           <button style={styles.actionBtn} onClick={() => navigate(`/agente/tickets/historial`)}>
             📋 Historial de tickets
           </button>
-          <button style={styles.actionBtn} onClick={() => navigate('/estudiante/tickets/nuevo')}>
+          <button style={styles.actionBtn} onClick={() => navigate('/tickets/nuevo')}>
             ➕ Crear ticket
           </button>
           {agente?.esGerencial && (

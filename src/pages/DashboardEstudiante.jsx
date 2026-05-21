@@ -57,7 +57,7 @@ export default function DashboardEstudiante() {
         <div style={styles.section}>
                 <h3 style={styles.sectionTitle}>¿En qué podemos ayudarte?</h3>
                 <div style={styles.btnGroup}>
-                    <button style={styles.actionBtn} onClick={() => navigate('/estudiante/tickets/nuevo')}>
+                    <button style={styles.actionBtn} onClick={() => navigate('/tickets/nuevo')}>
                         Crear ticket
                     </button>
                     <button style={styles.actionBtn} onClick={() => navigate('/estudiante/tickets')}>

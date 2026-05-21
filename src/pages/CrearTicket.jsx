@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 
@@ -13,9 +13,16 @@ const PRIORIDAD_INFO = {
 export default function CrearTicket() {
   const [tipologia, setTipologia] = useState('')
   const [descripcion, setDescripcion] = useState('')
+  const [carnetEstudiante, setCarnetEstudiante] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [esAgente, setEsAgente] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+    setEsAgente(usuario.rol === 'Agente' || usuario.rol === 'Coordinador')
+  }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -24,11 +31,17 @@ export default function CrearTicket() {
     if (!tipologia) return setError('Selecciona una tipología')
     if (descripcion.trim().length < 10)
       return setError('La descripción debe tener al menos 10 caracteres')
+    if (esAgente && !carnetEstudiante)
+      return setError('Debes ingresar el carnet del estudiante')
 
     setLoading(true)
     try {
-      await api.post('/tickets', { tipologiaITIL: tipologia, descripcion })
-      navigate('/estudiante/tickets')
+      await api.post('/tickets', { 
+        tipologiaITIL: tipologia, 
+        descripcion,
+        ...(esAgente && { carnetEstudiante: parseInt(carnetEstudiante) })
+      })
+      navigate(-1)
     } catch (err) {
       setError(err.response?.data?.message || 'Error al crear el ticket')
     } finally {
@@ -41,7 +54,7 @@ export default function CrearTicket() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <button style={styles.backBtn} onClick={() => navigate('/estudiante/dashboard')}>
+        <button style={styles.backBtn} onClick={() => navigate(-1)}>
           ← Volver
         </button>
         <span style={styles.headerTitle}>Crear ticket</span>
@@ -56,7 +69,20 @@ export default function CrearTicket() {
           </p>
 
           <form onSubmit={handleSubmit}>
-            {/* Tipología */}
+            {esAgente && (
+              <div style={styles.field}>
+                <label style={styles.label}>Carnet del estudiante *</label>
+                <input
+                  type="number"
+                  style={styles.input}
+                  value={carnetEstudiante}
+                  onChange={e => setCarnetEstudiante(e.target.value)}
+                  placeholder="Ej: 1"
+                  required
+                />
+              </div>
+            )}
+
             <div style={styles.field}>
               <label style={styles.label}>Tipo de solicitud *</label>
               <div style={styles.tipologias}>
@@ -79,7 +105,6 @@ export default function CrearTicket() {
               </div>
             </div>
 
-            {/* Info de prioridad automática */}
             {info && (
               <div style={{ ...styles.prioridadBox, borderColor: info.color }}>
                 <span style={{ fontSize: 13, color: '#555' }}>
@@ -91,7 +116,6 @@ export default function CrearTicket() {
               </div>
             )}
 
-            {/* Descripción */}
             <div style={styles.field}>
               <label style={styles.label}>Descripción del problema *</label>
               <textarea
@@ -112,7 +136,7 @@ export default function CrearTicket() {
               style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
               disabled={loading}
             >
-              {loading ? 'Enviando...' : 'Crear ticket'}
+              {loading ? 'Enviando...' : '🎫 Crear ticket'}
             </button>
           </form>
         </div>
@@ -132,6 +156,7 @@ const styles = {
   subtitle: { fontSize: '13px', color: '#888', marginBottom: '1.5rem' },
   field: { marginBottom: '1.25rem' },
   label: { display: 'block', fontSize: '13px', fontWeight: '500', color: '#444', marginBottom: '8px' },
+  input: { width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' },
   tipologias: { display: 'flex', gap: '10px' },
   tipBtn: { flex: 1, padding: '10px', border: '1.5px solid #ddd', borderRadius: '8px', background: '#fff', cursor: 'pointer', fontSize: '13px', color: '#555', transition: 'all .15s' },
   tipBtnActive: { borderColor: '#1a1a2e', background: '#1a1a2e', color: '#fff' },
