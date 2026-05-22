@@ -6,6 +6,7 @@ import HistorialTickets from './pages/HistorialTickets';
 import DashboardAgente from './pages/DashboardAgente';
 import TicketsAsignados from './pages/TicketsAsignados';
 import DetalleTicket from './pages/DetalleTicket';
+import HistorialTicketsAgente from './pages/HistorialTicketsAgente';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/agente/dashboard" element={<DashboardAgente />} />
         <Route path="/agente/tickets" element={<TicketsAsignados />} />
         <Route path="/tickets/:idTicket" element={<DetalleTicket />} />
+        <Route path="/agente/tickets/historial" element={<HistorialTicketsAgente />} />
       </Routes>
     </BrowserRouter>
   )
