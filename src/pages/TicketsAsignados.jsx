@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api from '../services/api'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const COLOR_PRIORIDAD = {
   'Alta':  '#e74c3c',
   'Media': '#e67e22',
   'Baja':  '#27ae60'
-}
+};
 
 export default function TicketsAsignados() {
   const [tickets, setTickets] = useState([])
@@ -40,7 +40,7 @@ export default function TicketsAsignados() {
 
       <div style={styles.container}>
         <p style={styles.contador}>
-          {loading ? 'Cargando...' : `${ticketsFiltrados.length} ticket${ticketsFiltrados.length !== 1 ? 's' : ''}`}
+          {loading ? 'Cargando...' : `${ticketsFiltrados.length} ticket${ticketsFiltrados.length !== 1 ? 's' : ''} en ${filtro}`}
         </p>
 
         {!loading && tickets.length === 0 && (
