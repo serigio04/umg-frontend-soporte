@@ -11,13 +11,15 @@ const COLOR_ESTADO = {
 }
 
 export default function DetalleTicket() {
-  const { idTicket } = useParams()
-  const [ticket, setTicket] = useState(null)
-  const [nuevoEstado, setNuevoEstado] = useState('')
-  const [comentario, setComentario] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [enviando, setEnviando] = useState(false)
-  const navigate = useNavigate()
+  const { idTicket } = useParams();
+  const [ticket, setTicket] = useState(null);
+  const [nuevoEstado, setNuevoEstado] = useState('');
+  const [comentario, setComentario] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [enviando, setEnviando] = useState(false);
+  const navigate = useNavigate();
+
+  const puedeEditar = ticket && ticket.estado !== 'Cerrado';
 
   useEffect(() => {
     api.get(`/tickets/${idTicket}`)
@@ -102,8 +104,17 @@ export default function DetalleTicket() {
                 placeholder="Comentario técnico..."
               />
             </div>
-            <button type="submit" style={{ ...styles.btn, opacity: enviando ? 0.7 : 1 }} disabled={enviando}>
-              {enviando ? 'Guardando...' : 'Cambiar estado'}
+            <button 
+                type="submit" 
+                style={{ 
+                    ...styles.btn, 
+                    opacity: enviando ? 0.7 : 1,
+                    background: puedeEditar ? '#1a1a2e' : '#ccc',
+                    cursor: puedeEditar ? 'pointer' : 'not-allowed'
+                }} 
+                disabled={enviando || !puedeEditar}
+                >
+                {!puedeEditar ? 'Ticket cerrado' : enviando ? 'Guardando...' : 'Cambiar estado'}
             </button>
           </form>
         </div>
