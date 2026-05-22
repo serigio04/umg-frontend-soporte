@@ -12,7 +12,8 @@ export default function TicketsAsignados() {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [idAgente, setIdAgente] = useState(null)
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [filtro, setFiltro] = useState('Todos')
 
   useEffect(() => {
     api.get('/agentes/perfil')
@@ -20,10 +21,14 @@ export default function TicketsAsignados() {
         setIdAgente(r.data.idAgente)
         return api.get(`/agentes/${r.data.idAgente}/tickets`)
       })
-      .then(r => setTickets(r.data.filter(t => t.estado === 'Abierto')))
+      .then(r => setTickets(r.data))
       .catch(() => setTickets([]))
       .finally(() => setLoading(false))
-  }, [])
+  }, []);
+
+  const ticketsFiltrados = filtro === 'Todos' 
+    ? tickets 
+    : tickets.filter(t => t.estado === filtro);
 
   return (
     <div style={styles.page}>
@@ -35,21 +40,33 @@ export default function TicketsAsignados() {
 
       <div style={styles.container}>
         <p style={styles.contador}>
-          {loading ? 'Cargando...' : `${tickets.length} ticket${tickets.length !== 1 ? 's' : ''} abierto${tickets.length !== 1 ? 's' : ''}`}
+          {loading ? 'Cargando...' : `${ticketsFiltrados.length} ticket${ticketsFiltrados.length !== 1 ? 's' : ''}`}
         </p>
 
         {!loading && tickets.length === 0 && (
           <p style={styles.empty}>No tienes tickets abiertos asignados</p>
         )}
 
+        <div style={styles.filtro}>
+            <button style={styles.filstroBtn} onClick={() => setFiltro('Todos')}>Todos</button>
+            <button style={styles.filtroBtn} onClick={() => setFiltro('Abierto')}>Abierto</button>
+            <button style={styles.filtroBtn} onClick={() => setFiltro('EnProceso')}>En Proceso</button>
+            <button style={styles.filtroBtn} onClick={() => setFiltro('Pendiente')}>Pendiente</button>
+            <button style={styles.filtroBtn} onClick={() => setFiltro('Resuelto')}>Resuelto</button>
+            <button style={styles.filtroBtn} onClick={() => setFiltro('Cerrado')}>Cerrado</button>
+        </div>
+
         <div style={styles.lista}>
-          {tickets.map(t => (
+          {ticketsFiltrados.map(t => (
             <div key={t.idTicket} style={styles.card}>
               <div style={styles.cardTop}>
                 <span style={styles.ticketId}>Ticket #{t.idTicket}</span>
-                <span style={{ ...styles.badge, background: COLOR_PRIORIDAD[t.prioridadSLA] || '#999' }}>
-                  {t.prioridadSLA}
-                </span>
+                <div style={styles.dataTicket}>
+                  <span style={{ ...styles.badge, background: COLOR_PRIORIDAD[t.prioridadSLA] || '#999' }}>
+                    {t.prioridadSLA}
+                  </span>
+                  <span style={styles.estado}>Estado: {t.estado}</span>
+                </div>
               </div>
 
               <div style={styles.cardMid}>
@@ -63,7 +80,7 @@ export default function TicketsAsignados() {
                     day: '2-digit', month: 'short', year: 'numeric'
                   })}
                 </span>
-                <button style={styles.verBtn}>Ver detalle</button>
+                <button style={styles.verBtn} onClick={() => navigate(`/tickets/${t.idTicket}`)}>Ver detalle</button>
               </div>
             </div>
           ))}
@@ -82,6 +99,10 @@ const styles = {
   contador: { fontSize: '13px', color: '#888', marginBottom: '1rem' },
   empty: { textAlign: 'center', color: '#aaa', fontSize: '14px', padding: '3rem 0' },
   lista: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  filtro: { display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap', justifyContent: 'center' },
+  filtroBtn: { background: '#fff', border: '1px solid #1a1a2e', color: '#1a1a2e', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  estado: { fontSize: '13px', padding: '2px 9px', borderRadius: '20px', color: '#1a1a2e', fontWeight: '500', marginLeft: '8px', marginTop: '8px', background: '#eee' },
+  dataTicket: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'},
   card: { background: '#fff', borderRadius: '10px', padding: '1rem 1.25rem', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
   cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' },
   ticketId: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e' },
