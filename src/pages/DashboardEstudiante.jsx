@@ -23,13 +23,17 @@ export default function DashboardEstudiante() {
             })
             .catch(() => setUltimoTicket(null));
 
-        const u = JSON.parse(localStorage.getItem('usuario') || '{}')
-        setEstudiante({
-            nombre:  u.nombreCompleto,
-            carne:   '—',
-            carrera: '—',
-            saldo:   '—'
-        });
+        api.get('/estudiantes/perfil')
+            .then(est => {
+                console.log(est.data)
+                setEstudiante({
+                nombre: est.data.nombreCompleto,
+                correo: est.data.correoInstitucional,
+                carne: est.data.carne,
+                carrera: est.data.carrera,
+                saldo: `Q${parseFloat(est.data.saldo || 0).toFixed(2)}`
+            })})
+            .catch(() => setEstudiante(null))
     }, []);
 
   function cerrarSesion() {
@@ -76,13 +80,11 @@ export default function DashboardEstudiante() {
         <div style={styles.card}>
           <div style={styles.cardHeader}>
                 <h4 style={styles.cardTitle}>Mi perfil</h4>
-                <button style={styles.editBtn} onClick={() => navigate('/estudiante/perfil')}>
-                    Editar
-                </button>
           </div>
             {estudiante ? (
             <div>
                 <InfoRow label="Nombre" value={estudiante.nombre} />
+                <InfoRow label="Correo" value={estudiante.correo} />
                 <InfoRow label="Carné" value={estudiante.carne} />
                 <InfoRow label="Carrera" value={estudiante.carrera} />
                 <InfoRow label="Saldo" value={estudiante.saldo} />
