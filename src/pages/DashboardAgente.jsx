@@ -22,9 +22,9 @@ export default function DashboardAgente() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.get('/agentes/perfil').then(r => {
-      setAgente(r.data)
-      return api.get(`/agentes/${r.data.idAgente}/ticket-prioridad`)
+    api.get('/agentes/perfil').then(ticket => {
+      setAgente(ticket.data)
+      return api.get(`/agentes/${ticket.data.idAgente}/ticket-prioridad`)
     })
     .then(r => setTicketPrioridad(r.data))
     .catch(() => setTicketPrioridad(null))
@@ -125,6 +125,12 @@ export default function DashboardAgente() {
                 <span style={styles.rowLabel}>Estado</span>
                 <span style={{ ...styles.badge, background: COLOR_ESTADO[ticketPrioridad.estado] }}>
                   {ticketPrioridad.estado}
+                </span>
+              </div>
+              <div style={styles.row}>
+                <span style={styles.rowLabel}>Estudiante</span>
+                <span style={styles.descValor}>
+                  {ticketPrioridad.carne}
                 </span>
               </div>
               <button
