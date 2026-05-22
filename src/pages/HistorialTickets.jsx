@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api from '../services/api'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const COLOR_ESTADO = {
   'Abierto':    '#2980b9',
@@ -27,13 +27,13 @@ export default function HistorialTickets() {
       .then(r => setTickets(r.data))
       .catch(() => setTickets([]))
       .finally(() => setLoading(false))
-  }, [])
+  }, []);
 
-  const filtros = ['Todos', 'Abierto', 'En Proceso', 'Pendiente', 'Resuelto', 'Cerrado']
+  const filtros = ['Todos', 'Abierto', 'EnProceso', 'Pendiente', 'Resuelto', 'Cerrado'];
 
   const ticketsFiltrados = filtro === 'Todos'
     ? tickets
-    : tickets.filter(t => t.estado === filtro)
+    : tickets.filter(t => t.estado === filtro);
 
   return (
     <div style={styles.page}>
