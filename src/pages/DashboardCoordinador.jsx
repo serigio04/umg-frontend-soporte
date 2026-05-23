@@ -9,7 +9,16 @@ export default function DashboardCoordinador() {
   const [editandoAgente, setEditandoAgente] = useState(null)
   const [nuevaEspecialidad, setNuevaEspecialidad] = useState('')
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [paginaSLA, setPaginaSLA] = useState(1)
+  const [paginaAgentes, setPaginaAgentes] = useState(1)
+  const itemsPerPage = 20
   const navigate = useNavigate()
+
+  const slaPaginados = metricas?.slaVencidos ? metricas.slaVencidos.slice((paginaSLA - 1) * itemsPerPage, paginaSLA * itemsPerPage) : []
+  const totalPaginasSLA = metricas?.slaVencidos ? Math.ceil(metricas.slaVencidos.length / itemsPerPage) : 0
+
+  const agentesPaginados = agentes.slice((paginaAgentes - 1) * itemsPerPage, paginaAgentes * itemsPerPage)
+  const totalPaginasAgentes = Math.ceil(agentes.length / itemsPerPage)
 
   const fetchMetricas = () => {
     api.get('/metricas/dashboard')
@@ -116,6 +125,21 @@ export default function DashboardCoordinador() {
           <div style={styles.bigMetric}>
             {metricas ? Number(metricas.tiempoPromedioResolucionHoras).toFixed(1) : '...'} hrs
           </div>
+          <h4 style={{ ...styles.cardTitle, marginTop: '1rem', fontSize: '13px', color: '#555' }}>Desglosado por agente</h4>
+          {metricas ? (
+            <table style={{ ...styles.table, marginTop: '0.5rem' }}>
+              <tbody>
+                {metricas.tiempoPromedioPorAgente?.map((a, i) => (
+                  <tr key={i}>
+                    <td style={{ ...styles.td, fontSize: '12px', padding: '6px 10px' }}>{a.agente}</td>
+                    <td style={{ ...styles.td, fontSize: '12px', padding: '6px 10px', textAlign: 'right', fontWeight: 'bold' }}>
+                      {Number(a.tiempo_promedio_horas).toFixed(1)} hrs
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
         </div>
 
         {/* Metrica: Tickets por agente */}
@@ -144,6 +168,7 @@ export default function DashboardCoordinador() {
              metricas.slaVencidos.length === 0 ? (
                <p style={{ color: '#27ae60', padding: '10px 0' }}>✅ No hay tickets vencidos</p>
              ) : (
+               <>
                <table style={styles.table}>
                  <thead>
                    <tr>
@@ -151,10 +176,11 @@ export default function DashboardCoordinador() {
                      <th style={styles.th}>Prioridad</th>
                      <th style={styles.th}>Agente Asignado</th>
                      <th style={styles.th}>Fecha Creación</th>
+                     <th style={styles.th}>Fecha Resolución</th>
                    </tr>
                  </thead>
                  <tbody>
-                   {metricas.slaVencidos.map((t, i) => (
+                   {slaPaginados.map((t, i) => (
                      <tr key={i}>
                        <td style={styles.td}>#{t.idticket}</td>
                        <td style={styles.td}>
@@ -164,10 +190,29 @@ export default function DashboardCoordinador() {
                        </td>
                        <td style={styles.td}>{t.agente || 'Sin asignar'}</td>
                        <td style={styles.td}>{new Date(t.fechacreacion).toLocaleString('es-GT')}</td>
+                       <td style={styles.td}>
+                         {t.fecharesolucion ? new Date(t.fecharesolucion).toLocaleString('es-GT') : <span style={{ color: '#e67e22', fontWeight: 'bold' }}>Aún abierto</span>}
+                       </td>
                      </tr>
                    ))}
                  </tbody>
                </table>
+               {totalPaginasSLA > 1 && (
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                   <button 
+                     style={{...styles.actionBtn, padding: '6px 12px', background: paginaSLA === 1 ? '#ccc' : '#1a1a2e', cursor: paginaSLA === 1 ? 'not-allowed' : 'pointer' }}
+                     disabled={paginaSLA === 1}
+                     onClick={() => setPaginaSLA(p => p - 1)}
+                   >Anterior</button>
+                   <span style={{ fontSize: '13px' }}>Página {paginaSLA} de {totalPaginasSLA}</span>
+                   <button 
+                     style={{...styles.actionBtn, padding: '6px 12px', background: paginaSLA === totalPaginasSLA ? '#ccc' : '#1a1a2e', cursor: paginaSLA === totalPaginasSLA ? 'not-allowed' : 'pointer' }}
+                     disabled={paginaSLA === totalPaginasSLA}
+                     onClick={() => setPaginaSLA(p => p + 1)}
+                   >Siguiente</button>
+                 </div>
+               )}
+              </>
              )
           ) : <p style={styles.loading}>Cargando...</p>}
         </div>
@@ -180,6 +225,7 @@ export default function DashboardCoordinador() {
           {agentes.length === 0 ? (
             <p style={styles.loading}>Cargando agentes...</p>
           ) : (
+            <>
             <table style={styles.table}>
               <thead>
                 <tr>
@@ -190,18 +236,22 @@ export default function DashboardCoordinador() {
                 </tr>
               </thead>
               <tbody>
-                {agentes.map((a) => (
+                {agentesPaginados.map((a) => (
                   <tr key={a.idagente}>
                     <td style={styles.td}>{a.nombrecompleto}</td>
                     <td style={styles.td}>{a.correoinstitucional}</td>
                     <td style={styles.td}>
                       {editandoAgente === a.idagente ? (
-                        <input 
-                          type="text" 
+                        <select 
                           value={nuevaEspecialidad} 
                           onChange={(e) => setNuevaEspecialidad(e.target.value)}
-                          style={{ padding: '4px 8px', borderRadius: '4px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ccc' }}
-                        />
+                          style={{ padding: '4px 8px', borderRadius: '4px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ccc', fontFamily: 'sans-serif' }}
+                        >
+                          <option value="Incidente">Incidente</option>
+                          <option value="Solicitud">Solicitud</option>
+                          <option value="Cambio">Cambio</option>
+                          <option value="General">General</option>
+                        </select>
                       ) : (
                         a.especialidad
                       )}
@@ -222,6 +272,22 @@ export default function DashboardCoordinador() {
                 ))}
               </tbody>
             </table>
+            {totalPaginasAgentes > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                <button 
+                  style={{...styles.actionBtn, padding: '6px 12px', background: paginaAgentes === 1 ? '#ccc' : '#1a1a2e', cursor: paginaAgentes === 1 ? 'not-allowed' : 'pointer' }}
+                  disabled={paginaAgentes === 1}
+                  onClick={() => setPaginaAgentes(p => p - 1)}
+                >Anterior</button>
+                <span style={{ fontSize: '13px' }}>Página {paginaAgentes} de {totalPaginasAgentes}</span>
+                <button 
+                  style={{...styles.actionBtn, padding: '6px 12px', background: paginaAgentes === totalPaginasAgentes ? '#ccc' : '#1a1a2e', cursor: paginaAgentes === totalPaginasAgentes ? 'not-allowed' : 'pointer' }}
+                  disabled={paginaAgentes === totalPaginasAgentes}
+                  onClick={() => setPaginaAgentes(p => p + 1)}
+                >Siguiente</button>
+              </div>
+            )}
+            </>
           )}
         </div>
       </div>
