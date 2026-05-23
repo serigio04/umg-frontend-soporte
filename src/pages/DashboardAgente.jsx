@@ -56,6 +56,9 @@ export default function DashboardAgente() {
           <button style={styles.actionBtn} onClick={() => navigate('/tickets/nuevo')}>
             ➕ Crear ticket
           </button>
+          <button style={styles.actionBtn} onClick={() => navigate('/agente/conocimiento')}>
+            📚 Base de conocimiento
+          </button>
           {agente?.esGerencial && (
             <>
               <button style={{ ...styles.actionBtn, ...styles.actionBtnGerencial }}
