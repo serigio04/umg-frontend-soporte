@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import CambiarPassword from '../components/CambiarPassword'
 
 export default function DashboardEstudiante() {
   const [estudiante, setEstudiante] = useState(null);
   const [ultimoTicket, setUltimoTicket] = useState(null);
+  const [ticketsActivos, setTicketsActivos] = useState([]);
+  const [ticketsHistorial, setTicketsHistorial] = useState([]);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const navigate = useNavigate();
 
     useEffect(() => {
@@ -42,20 +46,25 @@ export default function DashboardEstudiante() {
   };
 
   const colorEstado = {
-    'Abierto': '#2980b9',
-    'En Proceso': '#e67e22',
-    'Pendiente': '#8e44ad',
-    'Resuelto': '#27ae60',
-    'Cerrado': '#7f8c8d'
+    'Abierto': '#e74c3c',
+    'EnProceso': '#e67e22',
+    'Pendiente': '#f1c40f',
+    'Resuelto': '#1abc9c',
+    'Cerrado': '#3498db'
   };
 
   return (
     <div style={styles.page}>
-        {/* Header */}
-        <div style={styles.header}>
-            <span style={styles.headerTitle}>Sistema de Soporte UMG</span>
-            <button onClick={cerrarSesion} style={styles.logoutBtn}>Cerrar sesión</button>
+      {/* Header moderno */}
+      <div style={styles.header}>
+        <span style={styles.headerTitle}>Portal del Estudiante</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button style={styles.logoutBtn} onClick={() => setShowPasswordModal(true)}>🔑 Cambiar contraseña</button>
+          <button style={styles.logoutBtn} onClick={cerrarSesion}>Cerrar sesión</button>
         </div>
+      </div>
+
+      {showPasswordModal && <CambiarPassword onClose={() => setShowPasswordModal(false)} />}
 
         {/* Sección 1 — Acciones rápidas */}
         <div style={styles.section}>
@@ -146,7 +155,7 @@ const styles = {
     page: { minHeight: '100vh', background: '#f4f4f4', fontFamily: 'sans-serif' },
     header: { background: '#1a1a2e', color: '#fff', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     headerTitle: { fontWeight: '500', fontSize: '15px' },
-    logoutBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+    logoutBtn: { background: 'transparent', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
     section: { padding: '1.5rem 2rem 0' },
     sectionTitle: { fontSize: '15px', fontWeight: '500', color: '#1a1a2e', marginBottom: '1rem' },
     btnGroup: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
@@ -155,8 +164,8 @@ const styles = {
     card: { background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
     cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
     cardTitle: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e' },
-    editBtn: { background: 'transparent', border: '1px solid #ddd', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#555' },
-    row: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' },
+    editBtn: { background: 'transparent', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ddd', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#555' },
+    row: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: '#f0f0f0' },
     rowLabel: { fontSize: '13px', color: '#888' },
     rowValue: { fontSize: '13px', fontWeight: '500', color: '#1a1a2e' },
     badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' },
@@ -167,7 +176,7 @@ const styles = {
         alignItems: 'flex-start',
         gap: '12px',
         padding: '8px 0', 
-        borderBottom: '1px solid #f0f0f0' 
+        borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: '#f0f0f0' 
     },
     descValor: { 
         fontSize: '13px', 

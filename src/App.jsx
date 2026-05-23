@@ -13,6 +13,11 @@ import RutaProtegida from './components/RutaProtegida';
 import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import GestionConocimiento from './pages/GestionConocimiento';
 
+// Importar componentes agregados por el equipo
+import CrearAgente from './pages/CrearAgente';
+import CrearEstudiante from './pages/CrearEstudiante';
+import DashboardCoordinador from './pages/DashboardCoordinador';
+
 function App() {
   return (
     <BrowserRouter>
@@ -34,6 +39,13 @@ function App() {
           <Route path="/agente/tickets" element={<TicketsAsignados />} />
           <Route path="/agente/tickets/historial" element={<HistorialTicketsAgente />} />
           <Route path="/agente/conocimiento" element={<GestionConocimiento />} />
+          <Route path="/agente/crear-agente" element={<CrearAgente />} />
+          <Route path="/agente/crear-estudiante" element={<CrearEstudiante />} />
+        </Route>
+
+        {/* Rutas Protegidas únicamente para Coordinador */}
+        <Route element={<RutaProtegida rolesPermitidos={['Coordinador']} />}>
+          <Route path="/coordinador/dashboard" element={<DashboardCoordinador />} />
         </Route>
 
         {/* Rutas Compartidas Autenticadas (ambos roles pueden crear/ver detalles de tickets) */}
@@ -46,4 +58,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
