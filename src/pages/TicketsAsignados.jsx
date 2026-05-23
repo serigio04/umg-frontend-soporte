@@ -8,6 +8,14 @@ const COLOR_PRIORIDAD = {
   'Baja':  '#27ae60'
 };
 
+const COLOR_ESTADO = {
+  'Abierto': '#e74c3c',
+  'EnProceso': '#e67e22',
+  'Pendiente': '#f1c40f',
+  'Resuelto': '#1abc9c',
+  'Cerrado': '#3498db'
+};
+
 export default function TicketsAsignados() {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
@@ -61,11 +69,11 @@ export default function TicketsAsignados() {
             <div key={t.idTicket} style={styles.card}>
               <div style={styles.cardTop}>
                 <span style={styles.ticketId}>Ticket #{t.idTicket}</span>
-                <div style={styles.dataTicket}>
-                  <span style={{ ...styles.badge, background: COLOR_PRIORIDAD[t.prioridadSLA] || '#999' }}>
-                    {t.prioridadSLA}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ ...styles.badgeBanner, background: COLOR_PRIORIDAD[t.prioridadSLA] || '#999' }}>
+                    {t.prioridadSLA || 'N/A'}
                   </span>
-                  <span style={styles.estado}>Estado: {t.estado}</span>
+                  <span style={{ ...styles.badge, background: COLOR_ESTADO[t.estado] }}>{t.estado}</span>
                 </div>
               </div>
 
@@ -94,23 +102,24 @@ const styles = {
   page: { minHeight: '100vh', background: '#f4f4f4', fontFamily: 'sans-serif' },
   header: { background: '#1a1a2e', color: '#fff', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle: { fontWeight: '500', fontSize: '15px' },
-  backBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  backBtn: { background: 'transparent', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
   container: { maxWidth: '700px', margin: '2rem auto', padding: '0 1rem' },
   contador: { fontSize: '13px', color: '#888', marginBottom: '1rem' },
   empty: { textAlign: 'center', color: '#aaa', fontSize: '14px', padding: '3rem 0' },
   lista: { display: 'flex', flexDirection: 'column', gap: '10px' },
   filtro: { display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap', justifyContent: 'center' },
-  filtroBtn: { background: '#fff', border: '1px solid #1a1a2e', color: '#1a1a2e', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  filtroBtn: { background: '#fff', borderWidth: '1px', borderStyle: 'solid', borderColor: '#1a1a2e', color: '#1a1a2e', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
   estado: { fontSize: '13px', padding: '2px 9px', borderRadius: '20px', color: '#1a1a2e', fontWeight: '500', marginLeft: '8px', marginTop: '8px', background: '#eee' },
   dataTicket: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'},
   card: { background: '#fff', borderRadius: '10px', padding: '1rem 1.25rem', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
   cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' },
   ticketId: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e' },
   badge: { fontSize: '11px', padding: '2px 9px', borderRadius: '20px', color: '#fff', fontWeight: '500' },
+  badgeBanner: { fontSize: '11px', padding: '4px 12px', borderRadius: '4px', color: '#fff', fontWeight: 'bold', minWidth: '80px', textAlign: 'center' },
   cardMid: { marginBottom: '10px' },
   tipologia: { fontSize: '13px', color: '#555', display: 'block' },
   descripcion: { fontSize: '13px', color: '#666', margin: '4px 0 0', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
-  cardBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f0f0f0', paddingTop: '8px' },
+  cardBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: '#f0f0f0', paddingTop: '8px' },
   fecha: { fontSize: '12px', color: '#aaa' },
-  verBtn: { fontSize: '12px', padding: '5px 12px', borderRadius: '6px', border: '1px solid #ddd', background: 'transparent', cursor: 'pointer', color: '#555' }
+  verBtn: { fontSize: '12px', padding: '5px 12px', borderRadius: '6px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ddd', background: 'transparent', cursor: 'pointer', color: '#555' }
 }

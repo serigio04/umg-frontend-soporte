@@ -1,0 +1,252 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../services/api'
+import CambiarPassword from '../components/CambiarPassword'
+
+export default function DashboardCoordinador() {
+  const [metricas, setMetricas] = useState(null)
+  const [agentes, setAgentes] = useState([])
+  const [editandoAgente, setEditandoAgente] = useState(null)
+  const [nuevaEspecialidad, setNuevaEspecialidad] = useState('')
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const navigate = useNavigate()
+
+  const fetchMetricas = () => {
+    api.get('/metricas/dashboard')
+      .then(r => setMetricas(r.data))
+      .catch(console.error)
+  }
+
+  const fetchAgentes = () => {
+    api.get('/usuarios/agentes')
+      .then(r => setAgentes(r.data))
+      .catch(console.error)
+  }
+
+  useEffect(() => {
+    fetchMetricas()
+    fetchAgentes()
+    const intervalId = setInterval(fetchMetricas, 300000) // 5 minutos
+    
+    return () => clearInterval(intervalId)
+  }, [])
+
+  function cerrarSesion() {
+    localStorage.clear()
+    navigate('/login')
+  }
+
+  function descargarReporte() {
+    api.get('/metricas/reporte-csv', { responseType: 'blob' })
+      .then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'reporte_tickets.csv')
+        document.body.appendChild(link)
+        link.click()
+        link.parentNode.removeChild(link)
+      })
+      .catch(console.error)
+  }
+
+  function descargarReporteExcel() {
+    api.get('/metricas/reporte-excel', { responseType: 'blob' })
+      .then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'reporte_tickets.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        link.parentNode.removeChild(link)
+      })
+      .catch(console.error)
+  }
+
+  async function guardarEspecialidad(idAgente) {
+    if (!nuevaEspecialidad) return;
+    try {
+      await api.put(`/usuarios/agentes/${idAgente}/especialidad`, { especialidad: nuevaEspecialidad })
+      setEditandoAgente(null)
+      setNuevaEspecialidad('')
+      fetchAgentes()
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error al actualizar especialidad')
+    }
+  }
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.header}>
+        <span style={styles.headerTitle}>Sistema de Soporte UMG — Coordinador</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => setShowPasswordModal(true)} style={styles.logoutBtn}>🔑 Cambiar contraseña</button>
+          <button onClick={cerrarSesion} style={styles.logoutBtn}>Cerrar sesión</button>
+        </div>
+      </div>
+
+      {showPasswordModal && <CambiarPassword onClose={() => setShowPasswordModal(false)} />}
+
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Acciones de Coordinación</h3>
+        <div style={styles.btnGroup}>
+          <button style={styles.actionBtnGerencial} onClick={() => navigate('/agente/crear-estudiante')}>
+            👤 Nuevo estudiante
+          </button>
+          <button style={styles.actionBtnGerencial} onClick={() => navigate('/agente/crear-agente')}>
+            🛠️ Nuevo agente
+          </button>
+          <button style={styles.actionBtnGerencial} onClick={() => navigate('/agente/tickets')}>
+            🎫 Todos los tickets
+          </button>
+          <button style={{ ...styles.actionBtn, background: '#27ae60' }} onClick={descargarReporte}>
+            📊 Descargar CSV
+          </button>
+          <button style={{ ...styles.actionBtn, background: '#2980b9' }} onClick={descargarReporteExcel}>
+            📊 Descargar Excel
+          </button>
+        </div>
+      </div>
+
+      <div style={styles.grid}>
+        {/* Metrica: Tiempo de resolucion */}
+        <div style={styles.card}>
+          <h4 style={styles.cardTitle}>Tiempo promedio de resolución</h4>
+          <div style={styles.bigMetric}>
+            {metricas ? Number(metricas.tiempoPromedioResolucionHoras).toFixed(1) : '...'} hrs
+          </div>
+        </div>
+
+        {/* Metrica: Tickets por agente */}
+        <div style={styles.card}>
+          <h4 style={styles.cardTitle}>Tickets abiertos por agente</h4>
+          {metricas ? (
+            <table style={styles.table}>
+              <tbody>
+                {metricas.ticketsAbiertosPorAgente.map((a, i) => (
+                  <tr key={i}>
+                    <td style={styles.td}>{a.agente}</td>
+                    <td style={{ ...styles.td, textAlign: 'right', fontWeight: 'bold' }}>{a.cantidad}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p style={styles.loading}>Cargando...</p>}
+        </div>
+      </div>
+
+      {/* SLA Vencidos */}
+      <div style={styles.section}>
+        <div style={styles.card}>
+          <h4 style={styles.cardTitle}>Tickets con SLA Incumplido (Vencidos)</h4>
+          {metricas ? (
+             metricas.slaVencidos.length === 0 ? (
+               <p style={{ color: '#27ae60', padding: '10px 0' }}>✅ No hay tickets vencidos</p>
+             ) : (
+               <table style={styles.table}>
+                 <thead>
+                   <tr>
+                     <th style={styles.th}>ID Ticket</th>
+                     <th style={styles.th}>Prioridad</th>
+                     <th style={styles.th}>Agente Asignado</th>
+                     <th style={styles.th}>Fecha Creación</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {metricas.slaVencidos.map((t, i) => (
+                     <tr key={i}>
+                       <td style={styles.td}>#{t.idticket}</td>
+                       <td style={styles.td}>
+                          <span style={{...styles.badge, background: t.prioridadsla === 'Alta' ? '#e74c3c' : t.prioridadsla === 'Media' ? '#e67e22' : '#27ae60' }}>
+                            {t.prioridadsla}
+                          </span>
+                       </td>
+                       <td style={styles.td}>{t.agente || 'Sin asignar'}</td>
+                       <td style={styles.td}>{new Date(t.fechacreacion).toLocaleString('es-GT')}</td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             )
+          ) : <p style={styles.loading}>Cargando...</p>}
+        </div>
+      </div>
+
+      {/* Lista de Agentes */}
+      <div style={styles.section}>
+        <div style={styles.card}>
+          <h4 style={styles.cardTitle}>Gestión de Agentes</h4>
+          {agentes.length === 0 ? (
+            <p style={styles.loading}>Cargando agentes...</p>
+          ) : (
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Nombre</th>
+                  <th style={styles.th}>Correo</th>
+                  <th style={styles.th}>Especialidad</th>
+                  <th style={styles.th}>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentes.map((a) => (
+                  <tr key={a.idagente}>
+                    <td style={styles.td}>{a.nombrecompleto}</td>
+                    <td style={styles.td}>{a.correoinstitucional}</td>
+                    <td style={styles.td}>
+                      {editandoAgente === a.idagente ? (
+                        <input 
+                          type="text" 
+                          value={nuevaEspecialidad} 
+                          onChange={(e) => setNuevaEspecialidad(e.target.value)}
+                          style={{ padding: '4px 8px', borderRadius: '4px', borderWidth: '1px', borderStyle: 'solid', borderColor: '#ccc' }}
+                        />
+                      ) : (
+                        a.especialidad
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      {editandoAgente === a.idagente ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button style={{ ...styles.actionBtn, background: '#27ae60', padding: '6px 10px' }} onClick={() => guardarEspecialidad(a.idagente)}>Guardar</button>
+                          <button style={{ ...styles.actionBtn, background: '#e74c3c', padding: '6px 10px' }} onClick={() => setEditandoAgente(null)}>Cancelar</button>
+                        </div>
+                      ) : (
+                        <button style={{ ...styles.actionBtn, background: '#f39c12', padding: '6px 10px' }} onClick={() => { setEditandoAgente(a.idagente); setNuevaEspecialidad(a.especialidad); }}>
+                          ✏️ Modificar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+      <div style={{height: '2rem'}}></div>
+    </div>
+  )
+}
+
+const styles = {
+  page: { minHeight: '100vh', background: '#f4f4f4', fontFamily: 'sans-serif' },
+  header: { background: '#6c3483', color: '#fff', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  headerTitle: { fontWeight: '500', fontSize: '15px' },
+  logoutBtn: { background: 'transparent', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.3)', color: '#fff', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  section: { padding: '1.5rem 2rem 0' },
+  sectionTitle: { fontSize: '15px', fontWeight: '500', color: '#1a1a2e', marginBottom: '1rem' },
+  btnGroup: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
+  actionBtn: { padding: '10px 20px', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  actionBtnGerencial: { padding: '10px 20px', background: '#6c3483', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' },
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1.5rem 2rem' },
+  card: { background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+  cardTitle: { fontSize: '14px', fontWeight: '600', color: '#1a1a2e', marginBottom: '1rem' },
+  bigMetric: { fontSize: '2rem', fontWeight: 'bold', color: '#1a1a2e', textAlign: 'center', padding: '1rem' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  th: { textAlign: 'left', padding: '10px', fontSize: '13px', color: '#555', borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: '#eee' },
+  td: { padding: '10px', fontSize: '14px', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: '#eee', color: '#333' },
+  loading: { fontSize: '13px', color: '#aaa', textAlign: 'center', padding: '1rem 0' },
+  badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' }
+}
