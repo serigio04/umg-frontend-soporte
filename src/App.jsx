@@ -17,6 +17,7 @@ import GestionConocimiento from './pages/GestionConocimiento';
 import CrearAgente from './pages/CrearAgente';
 import CrearEstudiante from './pages/CrearEstudiante';
 import DashboardCoordinador from './pages/DashboardCoordinador';
+import TicketsCoordinador from './pages/HistorialTicketsCoordinador';
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
         {/* Rutas Protegidas únicamente para Coordinador */}
         <Route element={<RutaProtegida rolesPermitidos={['Coordinador']} />}>
           <Route path="/coordinador/dashboard" element={<DashboardCoordinador />} />
+          <Route path="/coordinador/tickets" element={<TicketsCoordinador />} />
         </Route>
 
         {/* Rutas Compartidas Autenticadas (ambos roles pueden crear/ver detalles de tickets) */}
