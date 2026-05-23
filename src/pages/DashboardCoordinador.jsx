@@ -97,7 +97,7 @@ export default function DashboardCoordinador() {
           <button style={styles.actionBtnGerencial} onClick={() => navigate('/agente/crear-agente')}>
             🛠️ Nuevo agente
           </button>
-          <button style={styles.actionBtnGerencial} onClick={() => navigate('/agente/tickets')}>
+          <button style={styles.actionBtnGerencial} onClick={() => navigate('/coordinador/tickets')}>
             🎫 Todos los tickets
           </button>
           <button style={{ ...styles.actionBtn, background: '#27ae60' }} onClick={descargarReporte}>

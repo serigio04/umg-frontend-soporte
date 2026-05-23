@@ -10,6 +10,7 @@ import HistorialTicketsAgente from './pages/HistorialTicketsAgente';
 import CrearAgente from './pages/CrearAgente';
 import CrearEstudiante from './pages/CrearEstudiante';
 import DashboardCoordinador from './pages/DashboardCoordinador';
+import TicketsCoordinador from './pages/HistorialTicketsCoordinador';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/agente/crear-agente" element={<CrearAgente />} />
         <Route path="/agente/crear-estudiante" element={<CrearEstudiante />} />
         <Route path="/coordinador/dashboard" element={<DashboardCoordinador />} />
+        <Route path="/coordinador/tickets" element={<TicketsCoordinador />} />
       </Routes>
     </BrowserRouter>
   )
