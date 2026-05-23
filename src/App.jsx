@@ -18,6 +18,7 @@ import CrearAgente from './pages/CrearAgente';
 import CrearEstudiante from './pages/CrearEstudiante';
 import DashboardCoordinador from './pages/DashboardCoordinador';
 import TicketsCoordinador from './pages/HistorialTicketsCoordinador';
+import EncuestaTicket from './pages/EncuestaTicket';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/estudiante/dashboard" element={<DashboardEstudiante />} />
           <Route path="/estudiante/tickets" element={<HistorialTickets />} />
           <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
+          <Route path="/encuesta/ticket/:idTicket" element={<EncuestaTicket />} />
         </Route>
 
         {/* Rutas Protegidas para Agente / Coordinador */}

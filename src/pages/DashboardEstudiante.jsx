@@ -21,8 +21,8 @@ export default function DashboardEstudiante() {
                 estado:       lastTicket.estado,
                 descripcion:  lastTicket.descripcion,
                 fecha:        new Date(lastTicket.fechaCreacion).toLocaleDateString('es-GT', {
-                                day: '2-digit', month: 'short', year: 'numeric'
-                            })
+                  day: '2-digit', month: 'short', year: 'numeric'
+                })
             });
             })
             .catch(() => setUltimoTicket(null));
