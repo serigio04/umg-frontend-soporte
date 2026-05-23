@@ -11,6 +11,7 @@ export default function DashboardCoordinador() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [paginaSLA, setPaginaSLA] = useState(1)
   const [paginaAgentes, setPaginaAgentes] = useState(1)
+  const [slideIndex, setSlideIndex] = useState(0)
   const itemsPerPage = 20
   const navigate = useNavigate()
 
@@ -22,9 +23,38 @@ export default function DashboardCoordinador() {
 
   const fetchMetricas = () => {
     api.get('/metricas/dashboard')
-      .then(r => setMetricas(r.data))
+      .then(r => {
+        setMetricas(r.data)
+        setSlideIndex(0)
+      })
       .catch(console.error)
   }
+
+  const sliderData = []
+  if (metricas) {
+    sliderData.push({
+      nombre: 'General (Todos los agentes)',
+      porcentaje: metricas.calificacionGeneral?.porcentaje_calificacion || 0,
+      promedio: metricas.calificacionGeneral?.promedio_calificacion || 0
+    })
+    if (metricas.calificacionesPorAgente) {
+      metricas.calificacionesPorAgente.forEach(a => {
+        sliderData.push({
+          nombre: a.agente,
+          porcentaje: a.porcentaje_calificacion || 0,
+          promedio: a.promedio_calificacion || 0
+        })
+      })
+    }
+  }
+
+  const handleNextSlide = () => {
+    setSlideIndex((prev) => (prev + 1) % sliderData.length)
+  }
+  const handlePrevSlide = () => {
+    setSlideIndex((prev) => (prev === 0 ? sliderData.length - 1 : prev - 1))
+  }
+  const currentSlide = sliderData[slideIndex]
 
   const fetchAgentes = () => {
     api.get('/usuarios/agentes')
@@ -66,6 +96,20 @@ export default function DashboardCoordinador() {
         const link = document.createElement('a')
         link.href = url
         link.setAttribute('download', 'reporte_tickets.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        link.parentNode.removeChild(link)
+      })
+      .catch(console.error)
+  }
+
+  function descargarReporteCalificaciones() {
+    api.get('/metricas/reporte-calificaciones-excel', { responseType: 'blob' })
+      .then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'reporte_calificaciones_agentes.xlsx')
         document.body.appendChild(link)
         link.click()
         link.parentNode.removeChild(link)
@@ -115,6 +159,9 @@ export default function DashboardCoordinador() {
           <button style={{ ...styles.actionBtn, background: '#2980b9' }} onClick={descargarReporteExcel}>
             📊 Descargar Excel
           </button>
+          <button style={{ ...styles.actionBtn, background: '#8e44ad' }} onClick={descargarReporteCalificaciones}>
+            📊 Calificaciones (Excel)
+          </button>
         </div>
       </div>
 
@@ -157,6 +204,55 @@ export default function DashboardCoordinador() {
               </tbody>
             </table>
           ) : <p style={styles.loading}>Cargando...</p>}
+        </div>
+
+        {/* Metrica: Calificaciones (Donut Chart Slider) */}
+        <div style={styles.card}>
+          <h4 style={styles.cardTitle}>Nivel de Satisfacción (Calificaciones)</h4>
+          {metricas && sliderData.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '1rem' }}>
+                <button onClick={handlePrevSlide} style={styles.arrowBtn}>⬅️</button>
+                <div style={{ textAlign: 'center', width: '200px' }}>
+                  <h5 style={{ margin: 0, fontSize: '14px', color: '#333' }}>{currentSlide.nombre}</h5>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#777' }}>
+                    Promedio: {Number(currentSlide.promedio).toFixed(1)} / 5.0
+                  </p>
+                </div>
+                <button onClick={handleNextSlide} style={styles.arrowBtn}>➡️</button>
+              </div>
+
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: `conic-gradient(#1abc9c ${currentSlide.porcentaje}%, #eee 0)`,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'relative'
+              }}>
+                <div style={{
+                  width: '90px',
+                  height: '90px',
+                  background: '#fff',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexDirection: 'column'
+                }}>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1a1a2e' }}>
+                    {Number(currentSlide.porcentaje).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            <p style={styles.loading}>No hay encuestas respondidas aún</p>
+          )}
         </div>
       </div>
 
@@ -314,5 +410,6 @@ const styles = {
   th: { textAlign: 'left', padding: '10px', fontSize: '13px', color: '#555', borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: '#eee' },
   td: { padding: '10px', fontSize: '14px', borderBottomWidth: '1px', borderBottomStyle: 'solid', borderBottomColor: '#eee', color: '#333' },
   loading: { fontSize: '13px', color: '#aaa', textAlign: 'center', padding: '1rem 0' },
-  badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' }
+  badge: { fontSize: '11px', padding: '2px 10px', borderRadius: '20px', color: '#fff', fontWeight: '500' },
+  arrowBtn: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.5rem', padding: '0 10px' }
 }
