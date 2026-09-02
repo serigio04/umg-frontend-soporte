@@ -56,7 +56,7 @@ npm run dev
 
 El cliente estará disponible en `http://localhost:5173`.
 
-> ⚠️ **Importante:** El servidor Express debe estar corriendo antes de usar el cliente. Sin el servidor, el login y todas las funciones que consumen la API no funcionarán.
+**Importante:** El servidor Express debe estar corriendo antes de usar el cliente. Sin el servidor, el login y todas las funciones que consumen la API no funcionarán.
 
 ---
 
@@ -66,18 +66,27 @@ El cliente estará disponible en `http://localhost:5173`.
 client/
 ├── src/
 │   ├── pages/
-│   │   ├── Login.jsx                 # Inicio de sesión
-│   │   ├── DashboardEstudiante.jsx   # Panel principal del estudiante
-│   │   ├── CrearTicket.jsx           # Formulario para crear ticket
-│   │   ├── HistorialTickets.jsx      # Historial de tickets del estudiante
-│   │   ├── DashboardAgente.jsx       # Panel principal del agente
-│   │   └── TicketsAsignados.jsx      # Tickets abiertos asignados al agente
-│   ├── components/                   # Componentes reutilizables
+│   │   ├── Login.jsx                       # Inicio de sesión
+│   │   ├── DashboardEstudiante.jsx         # Panel principal del estudiante
+│   │   ├── DashboardAgente.jsx             # Panel principal del agente
+│   │   ├── DashboardCoordinador.jsx        # Panel de supervisión del coordinador
+│   │   ├── CrearTicket.jsx                 # Formulario para crear ticket
+│   │   ├── DetalleTicket.jsx               # Vista detallada de ticket
+│   │   ├── HistorialTickets.jsx            # Historial de tickets del estudiante
+│   │   ├── HistorialTicketsAgente.jsx      # Historial de tickets del agente
+│   │   ├── HistorialTicketsCoordinador.jsx # Historial general de tickets
+│   │   ├── TicketsAsignados.jsx            # Tickets abiertos asignados al agente
+│   │   ├── EncuestaTicket.jsx              # Encuesta de satisfacción post-resolución
+│   │   ├── GestionConocimiento.jsx         # Gestor de base de conocimiento
+│   │   └── PreguntasFrecuentes.jsx         # Visor de base de conocimiento
+│   ├── components/
+│   │   ├── CambiarPassword.jsx             # Modal para cambiar contraseña
+│   │   └── RutaProtegida.jsx               # HOC para proteger rutas
 │   ├── services/
-│   │   └── api.js                    # Configuración de Axios + token JWT
-│   ├── context/                      # Contextos de React (estado global)
-│   ├── App.jsx                       # Rutas principales
-│   └── main.jsx                      # Punto de entrada
+│   │   └── api.js                          # Configuración de Axios + token JWT
+│   ├── context/                            # Contextos de React (estado global)
+│   ├── App.jsx                             # Rutas principales
+│   └── main.jsx                            # Punto de entrada
 ├── index.html
 └── package.json
 ```
@@ -91,50 +100,171 @@ client/
 | `/login` | `Login.jsx` | Ninguno | Inicio de sesión |
 | `/estudiante/dashboard` | `DashboardEstudiante.jsx` | Estudiante | Panel principal del estudiante |
 | `/estudiante/tickets` | `HistorialTickets.jsx` | Estudiante | Historial de todos sus tickets |
-| `/estudiante/tickets/nuevo` | `CrearTicket.jsx` | Estudiante | Formulario para crear ticket |
+| `/tickets/nuevo` | `CrearTicket.jsx` | Estudiante, Agente | Formulario para crear ticket |
+| `/tickets/:id` | `DetalleTicket.jsx` | Estudiante, Agente, Coordinador | Vista detallada de un ticket |
+| `/encuesta/:id` | `EncuestaTicket.jsx` | Estudiante | Encuesta de satisfacción |
 | `/agente/dashboard` | `DashboardAgente.jsx` | Agente, Coordinador | Panel principal del agente |
 | `/agente/tickets` | `TicketsAsignados.jsx` | Agente, Coordinador | Tickets abiertos asignados |
+| `/agente/historial` | `HistorialTicketsAgente.jsx` | Agente, Coordinador | Historial de tickets procesados |
+| `/coordinador/dashboard` | `DashboardCoordinador.jsx` | Coordinador | Panel de supervisión |
+| `/coordinador/tickets` | `HistorialTicketsCoordinador.jsx` | Coordinador | Historial general de tickets |
+| `/base-conocimiento` | `GestionConocimiento.jsx` | Agente, Coordinador | Gestor de base de conocimiento |
+| `/preguntas-frecuentes` | `PreguntasFrecuentes.jsx` | Estudiante, Agente | Visor de base de conocimiento |
 
 ---
 
 ## Páginas implementadas
 
-### Login
+### Autenticación
+
+**Login**
 Formulario de inicio de sesión que consume `POST /api/auth/login`. Guarda el token JWT y los datos del usuario en `localStorage` y redirige según el rol:
 - **Estudiante** → `/estudiante/dashboard`
 - **Agente** → `/agente/dashboard`
-- **Coordinador** → `/agente/dashboard`
+- **Coordinador** → `/coordinador/dashboard`
 
-### Dashboard Estudiante
-Panel principal dividido en dos secciones:
+---
+
+### Dashboards
+
+**Dashboard Estudiante**
+Panel principal del estudiante con acceso rápido a funciones clave:
 - **Acciones rápidas** — botones para crear ticket, ver historial y preguntas frecuentes
-- **Mi perfil** — nombre, carné, carrera y saldo del estudiante
-- **Último ticket abierto** — tipo, fecha, descripción y estado del ticket más reciente
+- **Mi perfil** — nombre, correo, carné, carrera y saldo del estudiante
+- **Último ticket abierto** — ID, tipo, fecha, descripción y estado del ticket más reciente
+- **Cambiar contraseña** — modal integrado para actualizar contraseña
+- **Colores codificados por estado** — visualización clara del progreso de tickets
 
-### Crear Ticket
-Formulario para abrir una nueva solicitud de soporte:
-- Selección de tipología ITIL: Incidente, Solicitud o Cambio
-- Indicador visual de prioridad asignada automáticamente (Alta 4h / Media 24h / Baja 48h)
-- Campo de descripción con contador de caracteres
-- El agente se asigna automáticamente según la tipología al enviarse
+**Dashboard Agente**
+Panel de control para agentes de soporte:
+- **Acciones rápidas** — ver tickets asignados, historial, crear ticket, base de conocimiento
+- **Mi perfil** — nombre, correo, especialidad, sede y nivel de acceso
+- **Métricas** — tickets resueltos, tiempo promedio de resolución, cumplimiento de SLA
+- **Tickets por prioridad** — listado paginado de tickets vencidos (20 items por página)
+- **Opciones adicionales para coordinadores** — crear estudiante, crear agente
+- **Escalación de tickets** — botón para escalar al coordinador si es necesario
 
-### Historial de Tickets
-Lista de todos los tickets del estudiante con:
-- Filtros por estado: Todos, Abierto, En Proceso, Pendiente, Resuelto, Cerrado
-- Contador de tickets según filtro activo
-- Card por ticket con tipo, descripción (máx. 2 líneas), estado y fecha
+**Dashboard Coordinador**
+Panel de supervisión y métricas generales:
+- **Dashboard de KPIs** — slider interactivo de calificaciones general y por agente
+- **SLA vencidos** — listado paginado con gestión completa (20 items por página)
+- **Gestión de agentes** — edición de especialidades en tiempo real
+- **Reportes** — descarga en formato CSV y Excel
+- **Actualización automática** — métricas se actualizan cada 5 minutos
 
-### Dashboard Agente
-Panel principal del agente dividido en dos secciones:
-- **Acciones rápidas** — ver tickets asignados, historial, crear ticket. Los coordinadores ven además botones para crear estudiante y agente
-- **Mi perfil** — nombre, correo, especialidad, sede y nivel de acceso. Badge especial para coordinadores
-- **Ticket de mayor prioridad** — el ticket abierto asignado con mayor urgencia, con tipo, fecha, descripción, prioridad y estado
+---
 
-### Tickets Asignados
-Lista de tickets abiertos asignados al agente con:
-- Contador de tickets activos
-- Card por ticket con prioridad (badge de color), tipo, descripción y fecha
-- Botón "Ver detalle" por ticket (pendiente de implementar)
+### Gestión de Tickets
+
+**Crear Ticket**
+Formulario para abrir nuevas solicitudes de soporte:
+- **Tipología ITIL** — selección entre Incidente (Alta), Solicitud (Media), Cambio (Baja)
+- **Descripción** — campo con validación mínima (10 caracteres)
+- **Prioridad automática** — asignada según tipología con información de SLA (4h/24h/48h)
+- **Campo adicional para agentes** — carné del estudiante cuando un agente crea el ticket
+- **Asignación automática** — el agente se asigna automáticamente según la tipología
+
+**Detalle Ticket**
+Visualización completa e interactiva de un ticket:
+- **Información completa** — ID, estado, prioridad, descripción y fechas
+- **Cambio de estado** — transiciones con opción de agregar comentarios
+- **Control de permisos** — solo agentes/coordinadores pueden editar
+- **Aceptación de resolución** — estudiantes pueden confirmar que el ticket fue resuelto
+- **Escalación** — opción para escalar al coordinador
+- **Colores codificados** — visualización clara por estado y prioridad
+
+**Historial de Tickets (Estudiante)**
+Registro completo de tickets del estudiante:
+- **Filtros por estado** — Todos, Abierto, En Proceso, Pendiente, Resuelto, Cerrado
+- **Contador dinámico** — actualización en tiempo real según filtro activo
+- **Información por ticket** — tipo, descripción (máx. 2 líneas), estado y fecha
+- **Encuestas de satisfacción** — carga automática para tickets resueltos/cerrados
+- **Visualización de encuestas completadas** — historial de evaluaciones
+
+**Tickets Asignados (Agente)**
+Lista de tickets abiertos para el agente activo:
+- **Obtención automática de ID** — identificación del agente logueado
+- **Filtros** — Todos, Abierto, En Proceso, Pendiente, Resuelto, Cerrado
+- **Información visual** — prioridad y estado con colores, tipología y descripción
+- **Acceso rápido** — botón para ver detalles completos del ticket
+- **Contador** — visualización de tickets por filtro activo
+
+**Historial Tickets (Agente)**
+Registro histórico de todos los tickets procesados:
+- **Historial completo** — todos los tickets del agente, no solo los abiertos
+- **Filtros** — En Proceso, Pendiente, Resuelto, Cerrado
+- **Visualización con badges** — prioridad y estado con colores
+- **Paginación** — navegación eficiente de resultados
+- **Contador** — tickets filtrados en tiempo real
+
+**Historial Tickets (Coordinador)**
+Gestión centralizada de todos los tickets:
+- **Visualización general** — todos los tickets abiertos del sistema
+- **Filtrado por estado** — acceso rápido a tickets específicos
+- **Búsqueda integrada** — localización de tickets por criterios
+- **Control de asignación** — reasignación de tickets desde esta vista
+
+---
+
+### Satisfacción del Cliente
+
+**Encuesta Ticket**
+Evaluación de satisfacción post-resolución:
+- **Calificación 5 estrellas** — interfaz visual interactiva
+- **Comentario opcional** — campo de texto para feedback detallado
+- **Validaciones** — calificación obligatoria, comentario opcional
+- **Integración API** — envío a `POST /encuestas/{idEncuesta}/responder`
+- **Confirmación** — mensaje de éxito tras completar
+- **Redirección automática** — regresa al historial tras completar
+
+---
+
+### Base de Conocimiento
+
+**Gestión de Conocimiento**
+Editor CRUD completo de artículos de soporte (acceso: Agente, Coordinador):
+- **Crear artículos** — título, categoría, contenido enriquecido
+- **Editar artículos** — modal para modificación de existentes
+- **Eliminar artículos** — con confirmación de seguridad
+- **Editor visual enriquecido**:
+  - Formateo: negrita, cursiva, encabezados, listas
+  - Estilos avanzados: bloques de código, destacados
+  - Selector de formato con dropdown
+  - Sincronización automática con contentEditable
+- **Búsqueda local** — filtro en tiempo real en tabla de artículos
+- **Categorías dinámicas** — datalist de sugerencias para nuevas categorías
+- **Paginación** — navegación eficiente de artículos
+- **Mensajes de estado** — confirmaciones de éxito y errores
+
+**Preguntas Frecuentes**
+Visor público de base de conocimiento (acceso: Estudiante, Agente):
+- **Búsqueda de artículos** — integración con API en tiempo real
+- **Visualización en acordeones** — organización por categorías expandibles/colapsables
+- **Render seguro de Markdown** — encabezados, negrita, cursiva, código, listas
+- **Detección automática** — renderizado inteligente de HTML vs Markdown
+- **Auto-expansión** — abre categorías automáticamente en búsquedas
+- **Vista detallada** — visualización completa de artículos seleccionados
+
+---
+
+### Componentes Reutilizables
+
+**CambiarPassword**
+Modal para cambio seguro de contraseña:
+- **Validación de contraseña actual** — verificación de identidad
+- **Coincidencia de nuevas contraseñas** — validación de confirmación
+- **Interfaz modal** — overlay oscuro con formulario flotante
+- **Integración API** — `PUT /usuarios/password`
+- **Cierre automático** — tras cambio exitoso
+- **Mensaje de éxito** — confirmación visual del cambio
+
+**RutaProtegida**
+Componente HOC para protección de rutas:
+- **Validación de autenticación** — verificación de token en localStorage
+- **Control de roles** — permisos por Estudiante, Agente, Coordinador
+- **Redirección inteligente** — según permisos y rol del usuario
+- **Protección de acceso** — redirección automática al login si no autenticado
+- **Manejo de permisos** — redirección según rol si acceso denegado
 
 ---
 
@@ -150,7 +280,7 @@ Lista de tickets abiertos asignados al agente con:
 
 ---
 
-## ⚠️ Problemas comunes
+## Problemas comunes
 
 **Pantalla en blanco al abrir el navegador**
 → Verifica que Vite esté corriendo con `npm run dev` y abre `http://localhost:5173`.
